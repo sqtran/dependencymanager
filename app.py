@@ -1,6 +1,22 @@
 from flask import Flask, request
+from kubernetes import client, config
+from openshift.dynamic import DynamicClient
+
 
 app = Flask(__name__)
+
+
+k8s_client = config.new_client_from_config()
+dyn_client = DynamicClient(k8s_client)
+
+v1_projects = dyn_client.resources.get(api_version='project.openshift.io/v1', kind='Project')
+
+project_list = v1_porjects.get()
+
+for project in project_list.items:
+    print(project.metadata.name)
+
+
 
 @app.route('/')
 def hello_world():
@@ -30,6 +46,13 @@ def registration(namespace, k8stype, name):
 @app.route("/list")
 def listall():
     return str(depmap)
+
+
+
+@app.route("/projects")
+def list_projects():
+    
+
 
 
 if __name__ == "__main__":
