@@ -43,14 +43,14 @@ def list_projects():
 
 @app.route("/dependencyCheck/<namespace>/<k8stype>/<name>")
 def check_dependencies(namespace, k8stype, name):
-   #"oc get dc spring-boot-git -o jsonpath={.metadata.labels}"
-
    cmd = "oc get %s/%s -n %s -o jsonpath={.metadata.labels}" % (k8stype, name, namespace)
 
-   returned_value = subprocess.call(cmd, shell=True)  # returns the exit code in unix
-   print('returned value:', returned_value)
+   ret_val = subprocess.call(cmd, shell=True)  # returns the exit code in unix
 
-   return str(returned_value)
+   print('returned value:', ret_val)
+   print("dependencies = " + str(ret_val["gr.depman/requires"]))
+
+   return str(ret_val)
 
 
 if __name__ == "__main__":
