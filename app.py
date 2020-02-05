@@ -1,21 +1,17 @@
 from flask import Flask, request
-from kubernetes import client, config
-from openshift.dynamic import DynamicClient
+#from kubernetes import client, config
+#from openshift.dynamic import DynamicClient
 
 
 app = Flask(__name__)
 
 
-k8s_client = config.new_client_from_config()
-dyn_client = DynamicClient(k8s_client)
-
-v1_projects = dyn_client.resources.get(api_version='project.openshift.io/v1', kind='Project')
-
-project_list = v1_porjects.get()
-
-for project in project_list.items:
-    print(project.metadata.name)
-
+#k8s_client = config.new_client_from_config()
+#dyn_client = DynamicClient(k8s_client)
+#v1_projects = dyn_client.resources.get(api_version='project.openshift.io/v1', kind='Project')
+#project_list = v1_projects.get()
+#for project in project_list.items:
+#    print(project.metadata.name)
 
 
 @app.route('/')
@@ -51,7 +47,7 @@ def listall():
 
 @app.route("/projects")
 def list_projects():
-    
+    return ""    
 
 
 
