@@ -1,4 +1,5 @@
 from flask import Flask, request
+import subprocess
 
 app = Flask(__name__)
 
@@ -23,14 +24,12 @@ def registration(namespace, k8stype, name):
     elif request.method == "DELETE":
        print(val + " removed\n")
        entries.remove(val)
-
     return "done\n"
 
 
 @app.route("/list")
 def listall():
     return str(depmap)
-
 
 
 @app.route("/projects")
@@ -41,6 +40,18 @@ def list_projects():
         projects = projects + key + "\n"
     return projects    
 
+
+@app.route("/dependencyCheck/<namespace>/<k8stype>/<name>")
+def check_dependencies(namespace, k8stype, name):
+   #"oc get dc spring-boot-git -o jsonpath={.metadata.labels}"
+
+   cmd = "oc get %s/%s -n %s -o jsonpath={.metadata.labels}" % (k8stype, name, namespace)
+
+   # returns output as byte string
+   returned_output = subprocess.check_output(cmd)
+   print('results is:', returned_output.decode("utf-8"))
+
+   return returned_output.decode("utf-8")
 
 
 if __name__ == "__main__":
