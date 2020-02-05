@@ -47,11 +47,10 @@ def check_dependencies(namespace, k8stype, name):
 
    cmd = "oc get %s/%s -n %s -o jsonpath={.metadata.labels}" % (k8stype, name, namespace)
 
-   # returns output as byte string
-   returned_output = subprocess.check_output(cmd)
-   print('results is:', returned_output.decode("utf-8"))
+   returned_value = subprocess.call(cmd, shell=True)  # returns the exit code in unix
+   print('returned value:', returned_value)
 
-   return returned_output.decode("utf-8")
+   return str(returned_value)
 
 
 if __name__ == "__main__":
