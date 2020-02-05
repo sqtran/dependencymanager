@@ -55,7 +55,7 @@ def dependencyCheck(namespace, k8stype, name):
 
 # 
 def dependencies_satisified(namespace, k8stype, name):
-    satisifed = true
+    satisifed = True
     deps = get_requires(namespace, k8stype, name)
     env = get_env(namespace)
 
@@ -64,7 +64,7 @@ def dependencies_satisified(namespace, k8stype, name):
         # check if our contract dependency is available
              if k not in contracts[env]:
                  print("This service is missing a contract dependency on %s " % (k))
-                 satisified = false
+                 satisified = False
                  break
     else:
         print("No dependencies, we're good to start")
