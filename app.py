@@ -43,9 +43,12 @@ def list_projects():
 
 @app.route("/dependencyCheck/<namespace>/<k8stype>/<name>")
 def check_dependencies(namespace, k8stype, name):
-   cmd = "oc get %s/%s -n %s -o jsonpath={.metadata.labels}" % (k8stype, name, namespace)
+   label = "gr.depman/requires"
+   cmd = "oc get %s/%s -n %s -o go-template='{{ index .metadata.labels \"%s\"}}'" % (k8stype, name, namespace, label)
 
-   ret_val = subprocess.call(cmd, shell=True)  # returns the exit code in unix
+   ret_val = subprocess.check_output(cmd, shell=True)  # returns the exit code in unix
+
+   # split ret_val by comma delimiter,  trim pieces, compare with a map of provided dependencies
 
    print('returned value:', ret_val)
    print("dependencies = " + str(ret_val["gr.depman/requires"]))
