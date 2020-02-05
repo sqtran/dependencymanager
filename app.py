@@ -54,7 +54,7 @@ def dependencyCheck(namespace, k8stype, name):
 
 
 # 
-def dependencies_satisifed(namespace, k8stype, name):
+def dependencies_satisified(namespace, k8stype, name):
     satisifed = true
     deps = get_requires(namespace, k8stype, name)
     env = get_env(namespace)
