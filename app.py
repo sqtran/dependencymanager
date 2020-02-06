@@ -7,24 +7,23 @@ app = Flask(__name__)
 def hello_world():
     return 'Hello, World! - here only for testing\n'
 
-depmap = {}
+# Contracts are stored as [<string>][List<contracts>] as environment (env) to contracts
 contracts = {}
 
-@app.route("/entry/<namespace>/<k8stype>/<name>", methods = ['POST', 'DELETE'])
-def registration(namespace, k8stype, name):
-    entries = depmap.get(namespace, [])
-    val = "%s/%s" % (k8stype, name)
+@app.route("/test/<namespace>/<contract>", methods = ['POST', 'DELETE'])
+def test_method_only(namespace, contract):
+    env = get_env(namespace)
+    entries = contracts.get(env, [])
  
     if request.method == "POST":
-        if val not in entries:
-           print(val + " added\n")
-           entries.append(val)
-           depmap[namespace] = entries
-        else:
-           print(val + " already present\n")
+        if contract not in entries:
+            entries.append(contract)
+            print(contract + " added\n")
     elif request.method == "DELETE":
-       print(val + " removed\n")
-       entries.remove(val)
+       entries.remove(contract)
+       print(contract + " removed\n")
+
+    contracts[env] = entries
     return "done\n"
 
 
@@ -36,7 +35,7 @@ def list_contracts():
 @app.route("/projects")
 def list_projects():
     projects = ""
-    for key in depmap:
+    for key in contracts:
         print(key)
         projects = projects + key + "\n"
     return projects    
