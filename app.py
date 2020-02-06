@@ -60,7 +60,7 @@ def dependencies_satisified(namespace, k8stype, name):
     env = get_env(namespace)
 
     if len(deps) > 0:
-        for k in dep:
+        for k in deps:
         # check if our contract dependency is available
              if k not in contracts[env]:
                  print("This service is missing a contract dependency on %s " % (k))
