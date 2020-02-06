@@ -28,9 +28,9 @@ def registration(namespace, k8stype, name):
     return "done\n"
 
 
-@app.route("/list")
-def listall():
-    return str(depmap)
+@app.route("/contracts")
+def list_contracts():
+    return str(contracts)
 
 
 @app.route("/projects")
