@@ -32,13 +32,13 @@ def list_contracts():
     return str(contracts)
 
 
-@app.route("/projects")
-def list_projects():
-    projects = ""
+@app.route("/envs")
+def list_envs():
+    envs = ""
     for key in contracts:
         print(key)
-        projects = projects + key + "\n"
-    return projects    
+        envs = envs + key + "\n"
+    return envs    
 
 
 @app.route("/dependencyCheck/<namespace>/<k8stype>/<name>")
