@@ -62,7 +62,7 @@ def dependencies_satisified(namespace, k8stype, name):
     if len(deps) > 0:
         for k in deps:
         # check if our contract dependency is available
-             if k not in contracts[env]:
+             if env not in contracts or k not in contracts[env]:
                  print("This service is missing a contract dependency on %s " % (k))
                  satisified = False
                  break
@@ -76,7 +76,7 @@ def add_contracts(namespace, k8stype, name):
     provs = get_provides(namespace, k8stype, name)
     env = get_env(namespace)
     for k in provs:
-        if contracts[env] is None:
+        if env not in contracts:
             contracts[env] = []
         if k not in contracts[env]:
             print("adding %s to our known contracts" % (k))
