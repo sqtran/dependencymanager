@@ -59,7 +59,8 @@ def dependencies_satisified(namespace, k8stype, name):
     deps = get_requires(namespace, k8stype, name)
     env = get_env(namespace)
 
-    if len(deps) > 0:
+    # if we have more than 1 dependency, or if we only have 1 and it's not blank
+    if len(deps) > 1 or (len(deps) == 1 and deps[0].strip() != ""):
         for k in deps:
         # check if our contract dependency is available
              if env not in contracts or k not in contracts[env]:
