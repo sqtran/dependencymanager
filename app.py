@@ -83,10 +83,12 @@ def add_contracts(namespace, k8stype, name):
             contracts[env].append(k)
 
 
-# TODO this should be safer
 def get_env(namespace):
-    return namespace.split("-")[1]
-
+    if namespace is not None:
+        split = namespace.split("-")
+        if len(split) == 2:
+            return namespace.split("-")[1]
+    return "unknown"
 
 # runs an OC command to grab a label
 def oc_get_labels_str(namespace, k8stype, name, label):
