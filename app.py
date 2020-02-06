@@ -66,7 +66,6 @@ def dependencies_satisified(namespace, k8stype, name):
              if env not in contracts or k not in contracts[env]:
                  print("This service is missing a contract dependency on %s " % (k))
                  satisified = False
-                 break
     else:
         print("No dependencies, we're good to start")
  
