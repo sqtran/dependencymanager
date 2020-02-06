@@ -47,9 +47,9 @@ def dependencyCheck(namespace, k8stype, name):
   
    if dependencies_satisified(namespace, k8stype, name):
        add_contracts(namespace, k8stype, name)
-       return "All good!"
+       return "All good!", 200
    else:
-       abort(408)
+       return "Dependencies are missing", 408
        ## TODO this could return a smarter list of the individual pieces missing
 
 
