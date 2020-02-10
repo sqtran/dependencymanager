@@ -1,0 +1,11 @@
+apiVersion: v1
+imagePullSecrets:
+- name: depman-dockercfg-6zhsr
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  name: depman
+  selfLink: /api/v1/namespaces/beta/serviceaccounts/depman
+secrets:
+- name: depman-dockercfg-6zhsr
+- name: depman-token-49wxw

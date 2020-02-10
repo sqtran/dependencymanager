@@ -1,0 +1,32 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    application: ocp-python
+  name: ocp-python
+spec:
+  failedBuildsHistoryLimit: 5
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: ocp-python:latest
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    dockerfile: |-
+      FROM openshift/python:3.6
+      USER root
+      RUN curl http://downloads.openshift-console.svc/amd64/linux/oc --output /usr/local/bin/oc
+      RUN chmod +x /usr/local/bin/oc
+      USER 1001
+    type: Dockerfile
+  strategy:
+    dockerStrategy:
+      from:
+        kind: ImageStreamTag
+        name: python:3.6
+        namespace: openshift
+    type: Docker
+  successfulBuildsHistoryLimit: 5

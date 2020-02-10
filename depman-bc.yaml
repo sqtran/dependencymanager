@@ -1,0 +1,52 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  annotations:
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: https://github.com/sqtran/dependencymanager.git
+  creationTimestamp: null
+  labels:
+    app: depman
+    app.kubernetes.io/component: depman
+    app.kubernetes.io/instance: depman
+    app.kubernetes.io/name: python
+    app.kubernetes.io/part-of: depman
+    app.openshift.io/runtime: python
+    app.openshift.io/runtime-version: "3.6"
+  name: depman
+spec:
+  failedBuildsHistoryLimit: 5
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: depman:latest
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    contextDir: /
+    git:
+      uri: https://github.com/sqtran/dependencymanager.git
+    type: Git
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: ocp-python:latest
+        namespace: depman
+    type: Source
+  successfulBuildsHistoryLimit: 5
+  triggers:
+  - generic:
+      secretReference:
+        name: depman-generic-webhook-secret
+    type: Generic
+  - github:
+      secretReference:
+        name: depman-github-webhook-secret
+    type: GitHub
+  - imageChange:
+      lastTriggeredImageID: image-registry.openshift-image-registry.svc:5000/beta/ocp-python@sha256:3c211ed62362aec15195d52926fc590a11c6a32b835bb298503f32468785a4b2
+    type: ImageChange
+  - type: ConfigChange
