@@ -86,7 +86,6 @@ def add_contracts(namespace, k8stype, name):
 def get_env(namespace):
     return namespace.split("-")[-1]
 
-# TODO add sentinel to check for empty results
 
 # runs an OC command to grab a label
 def oc_get_labels_str(namespace, k8stype, name, label):
@@ -106,7 +105,7 @@ def get_requires(namespace, k8stype, name):
 
 
 def sanitize_list(my_str_list):
-    if my_str_list is None:
+    if my_str_list is None or my_str_list == "<no value>":
         return []
     else:
         sanitized = []
