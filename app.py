@@ -88,8 +88,8 @@ def get_env(namespace):
 
 
 # runs an OC command to grab a label
-def oc_get_labels_str(namespace, k8stype, name, label):
-    cmd = "oc get %s/%s -n %s -o go-template='{{ index .metadata.labels \"%s\"}}'" % (k8stype, name, namespace, label)
+def oc_get_labels_str(namespace, k8stype, name, field):
+    cmd = "oc get %s/%s -n %s -o go-template='{{ index .metadata.annotations \"%s\"}}'" % (k8stype, name, namespace, field)
     val = subprocess.check_output(cmd, shell=True).decode("utf-8")
     return val
 
