@@ -82,13 +82,11 @@ def add_contracts(namespace, k8stype, name):
             print("adding %s to our known contracts" % (k))
             contracts[env].append(k)
 
-
+# if namespace does not have a hypen in it, it just defaults to the name of the namespace
 def get_env(namespace):
-    if namespace is not None:
-        split = namespace.split("-")
-        if len(split) == 2:
-            return namespace.split("-")[1]
-    return "unknown"
+    return namespace.split("-")[-1]
+
+# TODO add sentinel to check for empty results
 
 # runs an OC command to grab a label
 def oc_get_labels_str(namespace, k8stype, name, label):
