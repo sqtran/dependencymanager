@@ -1,11 +1,14 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 import subprocess
+import json
 
 app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World! - here only for testing\n'
+#    return 'Hello, World! - here only for testing\n'
+    return render_template('main.html')
+
 
 # Contracts are stored as [<string>][List<contracts>] as environment (env) to contracts
 contracts = {}
@@ -17,26 +20,30 @@ providers = {}
 def test_method_only(namespace, contract):
     env = get_env(namespace)
     entries = contracts.get(env, [])
- 
+    provs   = providers.get(namespace, [])
+
     if request.method == "POST":
         if contract not in entries:
             entries.append(contract)
             print(contract + " added\n")
+        if contract not in provs:
+            provs.append(contract)
     elif request.method == "DELETE":
        entries.remove(contract)
+       provs.remove(contract)
        print(contract + " removed\n")
 
+    providers[namespace] = provs
     contracts[env] = entries
     return "done\n"
 
-
 @app.route("/contracts")
 def list_contracts():
-    return str(contracts)
+    return json.dumps(contracts)
 
 @app.route("/providers")
 def list_providers():
-    return str(providers)
+    return json.dumps(providers)
 
 
 # TODO add a mechanism to loop through and refresh the provides/requires for all known components
@@ -51,12 +58,14 @@ def list_envs():
     for key in contracts:
         print(key)
         envs = envs + key + "\n"
-    return envs    
+    return envs
 
+
+# TODO need k8s type validation
 
 @app.route("/dependencyCheck/<namespace>/<k8stype>/<name>")
 def dependencyCheck(namespace, k8stype, name):
-  
+
    if dependencies_satisified(namespace, k8stype, name):
        add_contracts(namespace, k8stype, name)
        add_provider(namespace, k8stype, name)
@@ -66,7 +75,7 @@ def dependencyCheck(namespace, k8stype, name):
        ## TODO this could return a smarter list of the individual pieces missing
 
 
-# 
+#
 def dependencies_satisified(namespace, k8stype, name):
     fulfilled = True
     deps = get_requires(namespace, k8stype, name)
@@ -82,7 +91,7 @@ def dependencies_satisified(namespace, k8stype, name):
                  break
     else:
         print("No dependencies, we're good to start")
- 
+
     return fulfilled
 
 # Add provided contracts to our map
@@ -138,4 +147,3 @@ def sanitize_list(my_str_list):
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
-
