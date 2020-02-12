@@ -15,6 +15,8 @@ contracts = {}
 # Providers are stored as [<string>][[<string>][List<string>]] as namespace to k8s_objects to contracts
 providers = {}
 
+missing_dependencies = {}
+
 @app.route("/test/<namespace>/<k8s>/<name>/<contract>", methods = ['POST', 'DELETE'])
 def test_method_only(namespace, k8s, name, contract):
     env = get_env(namespace)
@@ -72,12 +74,16 @@ def dependency_check(namespace, k8stype, name):
 
    if dependencies_satisified(namespace, k8stype, name):
        add_contracts(namespace, k8stype, name)
+       missing_dependencies[namespace].remove("%s/%s" % (k8stype, name))
        return "All good!", 200
    else:
        return "Dependencies are missing", 418
        ## TODO this could return a smarter list of the individual pieces missing
 
 
+@app.route("/missing")
+def get_missing_dependencies():
+    return json.dumps(missing_dependencies)
 #
 def dependencies_satisified(namespace, k8stype, name):
     fulfilled = True
@@ -90,6 +96,14 @@ def dependencies_satisified(namespace, k8stype, name):
         # check if our contract dependency is available
              if env not in contracts or k not in contracts[env]:
                  print("This service is missing a contract dependency on %s " % (k))
+                 ns_to_type = missing_dependencies.get(namespace, {})
+                 missing = ns_to_type.get("%s/%s" %(k8stype, name), [])
+
+                 if k.strip() not in missing:
+                     missing.append(k.strip())
+                     ns_to_type["%s/%s" % (k8stype, name)] = missing
+                     missing_dependencies[namespace]  = ns_to_type
+
                  fulfilled = False
                  break
     else:

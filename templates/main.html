@@ -24,6 +24,13 @@
         <span class="sr-only">Loading...</span>
       </div>
     </div>
+
+    <h1>Incomplete Applications</h1>
+    <div name="missing_main" id="missing_main">
+      <div class="spinner-grow" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -62,6 +69,27 @@
         $('#providers_main').html(tbl);
       }
     });
+
+
+    $.get("missing", function(data, status){
+      data = JSON.parse(data);
+      var tbl = "<table class='table table-striped table-bordered table-hover'>";
+      tbl += "<thead><tr><th scope='col'>Project Namespace</th><th scope='col'>Manifest Type</th><th scope='col'>Contracts</th></tr></thead>"
+
+      var atLeastOne = false;
+      $.each(data, function(outer_index, outer_val) {
+        $.each(outer_val, function(inner_index, inner_val) {
+          tbl += "<tr scope='row'><td>"+ outer_index + "</td><td>" + inner_index + "</td><td>" + inner_val +"</td></tr>";
+          atLeastOne = true;
+        });
+      });
+      tbl += "</table>";
+
+      if(atLeastOne) {
+        $('#missing_main').html(tbl);
+      }
+    });
+
   </script>
 
   <script src="/static/bootstrap-4.4.1-dist/js/bootstrap.min.js"></script>
