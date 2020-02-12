@@ -72,7 +72,6 @@ def dependency_check(namespace, k8stype, name):
 
    if dependencies_satisified(namespace, k8stype, name):
        add_contracts(namespace, k8stype, name)
-       add_provider(namespace, k8stype, name)
        return "All good!", 200
    else:
        return "Dependencies are missing", 418
@@ -108,14 +107,19 @@ def add_contracts(namespace, k8stype, name):
         if k not in contracts[env]:
             print("adding %s to our known contracts" % (k))
             contracts[env].append(k)
+            add_provider(namespace, k8stype, name, k)
 
 # Add contract provider to our map
-def add_provider(namespace, k8stype, name):
-    entries = providers.get(namespace, [])
+def add_provider(namespace, k8stype, name, contract):
     key = "%s/%s" % (k8stype, name)
-    if key not in entries:
-        entries.append(key)
-    providers[namespace] = entries
+    ns_to_type = providers.get(namespace, {})
+    contracts = ns_to_type.get(key, [])
+
+    if contract not in contracts:
+        contracts.append(contract)
+
+    ns_to_type[key] = contracts
+    providers[namespace] = ns_to_type
 
 # if namespace does not have a hypen in it, it just defaults to the name of the namespace
 def get_env(namespace):
