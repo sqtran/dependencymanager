@@ -67,8 +67,25 @@ def list_envs():
         envs = envs + key + "\n"
     return envs
 
-# TODO need k8s type validation
+@app.route("/register/<namespace>/<manifest>")
+def register_service(namespace, manifest):
+    pod_owner = oc_get_owner_reference(namespace, "pod/" + manifest)
+    owners_owner = oc_get_owner_reference(namespace, pod_owner)
 
+    ref = owners_owner
+    if owners_owner is None:
+        print("no owner, this is either a ReplicaSet or ReplicationController so there's nothing left to do")
+        ref = pod_owner
+
+    return dependency_check(namespace, ref.split("/")[0], ref.split("/")[1])
+
+# TODO
+
+# 1)  get ownerReference by pod name and Namespace to get ReplicationController or ReplicaSets
+# 2)  lookup replicacontrollr or replicasets to determine if there is a Deployment, DeploymentConfig, or StatefulSet owner to follow, otherwise it's just RS or RC
+
+
+# TODO need k8s type validation
 @app.route("/dependencyCheck/<namespace>/<k8stype>/<name>")
 def dependency_check(namespace, k8stype, name):
 
@@ -139,18 +156,21 @@ def add_provider(namespace, k8stype, name, contract):
 def get_env(namespace):
     return namespace.split("-")[-1]
 
+def get_oc_output(cmd):
+    return subprocess.check_output(cmd, shell=True).decode("utf-8")
+9
+def oc_get_owner_reference(namespace, object):
+    kind = get_oc_output("oc get %s -n %s -o go-template='{{ (index .metadata.ownerReferences 0).kind }}'" % (object, namespace))
+    name = get_oc_output("oc get %s -n %s -o go-template='{{ (index .metadata.ownerReferences 0).name }}'" % (object, namespace))
+    return "%s/%s" % (kind, name)
 
 # runs an OC command to grab a label
 def oc_get_labels_str(namespace, k8stype, name, field):
-    cmd = "oc get %s/%s -n %s -o go-template='{{ index .metadata.annotations \"%s\"}}'" % (k8stype, name, namespace, field)
-    val = subprocess.check_output(cmd, shell=True).decode("utf-8")
-    return val
-
+    return get_oc_output("oc get %s/%s -n %s -o go-template='{{ index .metadata.annotations \"%s\"}}'" % (k8stype, name, namespace, field))
 
 # returns a list of contracts being provided
 def get_provides(namespace, k8stype, name):
     return sanitize_list(oc_get_labels_str(namespace, k8stype, name, "gr.depman/provides"))
-
 
 # returns a list of contracts required
 def get_requires(namespace, k8stype, name):
