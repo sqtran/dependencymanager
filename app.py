@@ -52,6 +52,9 @@ def list_providers():
 
 @app.route("/flush", methods = ['POST'])
 def flush():
+    contracts = {}
+    providers = {}
+    missing_dependencies = {}
     return "flushed"
 
 # TODO add a mechanism to loop through and refresh the provides/requires for all known components
