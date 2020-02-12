@@ -5,22 +5,23 @@ import json
 app = Flask(__name__)
 
 @app.route('/')
-def hello_world():
-#    return 'Hello, World! - here only for testing\n'
+def main_page():
     return render_template('main.html')
 
 
 # Contracts are stored as [<string>][List<contracts>] as environment (env) to contracts
 contracts = {}
 
-# Providers are stored as [<string>][List<string>] as namespace to k8s_objects
+# Providers are stored as [<string>][[<string>][List<string>]] as namespace to k8s_objects to contracts
 providers = {}
 
-@app.route("/test/<namespace>/<contract>", methods = ['POST', 'DELETE'])
-def test_method_only(namespace, contract):
+@app.route("/test/<namespace>/<k8s>/<name>/<contract>", methods = ['POST', 'DELETE'])
+def test_method_only(namespace, k8s, name, contract):
     env = get_env(namespace)
     entries = contracts.get(env, [])
-    provs   = providers.get(namespace, [])
+
+    ns_to_type = providers.get(namespace, {})
+    provs = ns_to_type.get("%s/%s" % (k8s, name), [])
 
     if request.method == "POST":
         if contract not in entries:
@@ -33,7 +34,9 @@ def test_method_only(namespace, contract):
        provs.remove(contract)
        print(contract + " removed\n")
 
-    providers[namespace] = provs
+    ns_to_type["%s/%s" % (k8s, name)] = provs
+
+    providers[namespace] = ns_to_type
     contracts[env] = entries
     return "done\n"
 
@@ -45,12 +48,14 @@ def list_contracts():
 def list_providers():
     return json.dumps(providers)
 
+@app.route("/flush", methods = ['POST'])
+def flush():
+    return "flushed"
 
 # TODO add a mechanism to loop through and refresh the provides/requires for all known components
 @app.route("/refresh")
 def refresh():
-    return "fresh"
-
+    return "refreshened"
 
 @app.route("/envs")
 def list_envs():
@@ -60,11 +65,10 @@ def list_envs():
         envs = envs + key + "\n"
     return envs
 
-
 # TODO need k8s type validation
 
 @app.route("/dependencyCheck/<namespace>/<k8stype>/<name>")
-def dependencyCheck(namespace, k8stype, name):
+def dependency_check(namespace, k8stype, name):
 
    if dependencies_satisified(namespace, k8stype, name):
        add_contracts(namespace, k8stype, name)
