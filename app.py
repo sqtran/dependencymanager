@@ -91,7 +91,7 @@ def dependency_check(namespace, k8stype, name):
 
    if dependencies_satisified(namespace, k8stype, name):
        add_contracts(namespace, k8stype, name)
-       missing_dependencies[namespace].pop("%s/%s" % (k8stype, name), [])
+       missing_dependencies.get(namespace, {}).pop("%s/%s" % (k8stype, name), [])
        return "All good!", 200
    else:
        return "Dependencies are missing", 418
