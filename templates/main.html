@@ -54,7 +54,7 @@
     $.get("providers", function(data, status){
       data = JSON.parse(data);
       var tbl = "<table class='table table-striped table-bordered table-hover'>";
-      tbl += "<thead><tr><th scope='col'>Project Namespace</th><th scope='col'>Manifest Type</th><th scope='col'>Contracts</th></tr></thead>"
+      tbl += "<thead><tr><th scope='col'>Project Namespace</th><th scope='col'>Manifest</th><th scope='col'>Contracts</th></tr></thead>"
 
       var atLeastOne = false;
       $.each(data, function(outer_index, outer_val) {
@@ -74,7 +74,7 @@
     $.get("missing", function(data, status){
       data = JSON.parse(data);
       var tbl = "<table class='table table-striped table-bordered table-hover'>";
-      tbl += "<thead><tr><th scope='col'>Project Namespace</th><th scope='col'>Manifest Type</th><th scope='col'>Waiting for Contract</th></tr></thead>"
+      tbl += "<thead><tr><th scope='col'>Project Namespace</th><th scope='col'>Manifest</th><th scope='col'>Waiting for Contract</th></tr></thead>"
 
       var atLeastOne = false;
       $.each(data, function(outer_index, outer_val) {
