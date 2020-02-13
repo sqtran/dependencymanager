@@ -131,7 +131,6 @@ def dependencies_satisified(namespace, k8stype, name):
                      missing_dependencies[namespace]  = ns_to_type
 
                  fulfilled = False
-                 break
     else:
         print("No dependencies, we're good to start")
 
