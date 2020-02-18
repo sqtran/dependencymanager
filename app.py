@@ -18,7 +18,6 @@ providers = {}
 missing_dependencies = {}
 
 
-
 ## Testing only - delete when done
 @app.route("/testp")
 def testp():
@@ -26,16 +25,19 @@ def testp():
     return db.printhello()
 
 ## Testing only - delete when done
-@app.route("/testr")
-def testr():
+@app.route("/testfa")
+def testfa():
     return json.dumps(db.select_controllers())
 
 ## Testing only - delete when done
-@app.route("/testd")
-def testd():
-    controllers = db.select_controllers()
-    controller = db.select_controller_by_id(controllers[0][0])    # index 0 is the ID
-    db.delete_controller(controller[0])
+@app.route("/testf/<id>")
+def testf(id):
+    return json.dumps(db.select_controller_by_id(id))
+
+## Testing only - delete when done
+@app.route("/testd/<id>")
+def testd(id):
+    db.delete_controller_by_id(id)
     return "deleted "
 
 @app.route("/testu/<id>")
@@ -113,7 +115,9 @@ def register_service(namespace, manifest):
 
     #TODO super lazy to figure out the root cause, need to clean this up
     try:
-        pod_owner = oc_get_owner_reference(namespace, "pod/" + manifest)
+        pod_owner = oc_get_owner_reference(namename[0], type_name[1])
+
+    # Checking if this controller is already respace, "pod/" + manifest)
         owners_owner = oc_get_owner_reference(namespace, pod_owner)
     except:
         owners_owner = None
@@ -129,7 +133,7 @@ def register_service(namespace, manifest):
     #ret = dependency_check(namespace, type_name[0], type_name[1])
 
     # Checking if this controller is already registered
-    controller = db.select_controller(namespace,  type_name[0], type_name[1])
+    controller = db.select_controller_by_key(namespace,  type_name[0], type_name[1])
 
     if controller is not None and controller["deployment_completed"]:
         return "This controller is already registered", 200
@@ -137,7 +141,6 @@ def register_service(namespace, manifest):
     deps = get_requires(namespace,  type_name[0], type_name[1])
     contracts = db.select_contracts_by_env(get_env(namespace))
     complete = set(deps).issubset(set(contracts))
-
 
     if controller is None:
         controller = apppersistence.Workload_Controller()

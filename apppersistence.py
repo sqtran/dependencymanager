@@ -6,8 +6,6 @@ class Storage:
 
     app_persistence_db = "test.db"
 
-# If you are checking for the existence of an in-memory (RAM) table, then in the query use sqlite_temp_master instead of sqlite_master.
-
     # cursor.execute('CREATE TABLE ocp_workload_controller (id INTEGER PRIMARY KEY, env text)')
     # cursor.execute('CREATE TABLE ocp_project (id INTEGER PRIMARY KEY, env text)')
     # cursor.execute('CREATE TABLE contracts (id INTEGER PRIMARY KEY, name text, workload_controller)')
@@ -39,9 +37,10 @@ class Storage:
         with conn:
             cursor = conn.cursor()
             try:
+                # If you are checking for the existence of an in-memory (RAM) table, then in the query use sqlite_temp_master instead of sqlite_master.
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='workload_controller'")
                 if cursor.fetchone()[0]==1:
-                    print('Table exists.')
+                    print('Tabled exists.')
                     table_exists = True
             except:
                 print('Table does not exist yet')
@@ -77,26 +76,27 @@ class Storage:
 
 
     def delete_controller(self, c):
+        delete_controller_by_id(c["id"])
+
+    def delete_controller_by_id(self, id):
         conn = sqlite3.connect(self.app_persistence_db)
         with conn:
             cursor = conn.cursor()
-            cursor.execute("delete from workload_controller where id=?", (c,))
+            cursor.execute("delete from workload_controller where id=?", (id,))
         print("Deleted Controller")
 
-
+    def select_controller_by_key(self, namespace, type, name):
+        conn = sqlite3.connect(self.app_persistence_db)
+        cursor = conn.cursor()
+        cursor.execute("select * from workload_controller where controller_project = ? and type = ? and controller_name = ?", (namespace, type, name))
+        records = cursor.fetchone()
+        conn.close()
+        return records
 
     def select_controller_by_id(self, id):
         conn = sqlite3.connect(self.app_persistence_db)
         cursor = conn.cursor()
         cursor.execute("select * from workload_controller where id=?", (id,))
-        records = cursor.fetchone()
-        conn.close()
-        return records
-
-    def select_controller(self, namespace, type, name):
-        conn = sqlite3.connect(self.app_persistence_db)
-        cursor = conn.cursor()
-        cursor.execute("select * from workload_controller where controller_project = ? and type = ? and controller_name = ?", (namespace, type, name))
         records = cursor.fetchone()
         conn.close()
         return records
