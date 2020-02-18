@@ -83,7 +83,7 @@ def test_method_only(namespace, k8s, name, contract):
 # Contracts are stored as [<string>][List<contracts>] as environment (env) to contracts
 @app.route("/contracts")
 def list_contracts():
-    return json.dumps(contracts)
+    return json.dumps(db.select_contracts())
 
 @app.route("/providers")
 def list_providers():
@@ -130,12 +130,6 @@ def register_service(namespace, manifest):
 
     deps = get_requires(namespace,  type_name[0], type_name[1])
     contracts = db.select_contracts_by_env(get_env(namespace))
-
-    print("Dependencies")
-    print(deps)
-    print("Contracts")
-    print(contracts)
-
     complete = set(deps).issubset(set(contracts))
 
     if controller is None:
@@ -165,11 +159,12 @@ def register_service(namespace, manifest):
         return "All required dependencies have been satsified", 200
     else:
         print("Required Dependencies %s" %(deps))
-        print("Provided Dependencies %s" %(contracts))
+        print("Available Contracts %s" %(contracts))
         return "Dependencies are missing", 418
 
+
 # TODO delete this, this isn't required
-@app.route("/dependencyCheck/<namespace>/<k8stype>/<name>")
+#@app.route("/dependencyCheck/<namespace>/<k8stype>/<name>")
 def dependency_check(namespace, k8stype, name):
 
    if dependencies_satisified(namespace, k8stype, name):
@@ -183,6 +178,8 @@ def dependency_check(namespace, k8stype, name):
 
 @app.route("/missing")
 def get_missing_dependencies():
+
+
     return json.dumps(missing_dependencies)
 #
 def dependencies_satisified(namespace, k8stype, name):
@@ -210,6 +207,8 @@ def dependencies_satisified(namespace, k8stype, name):
 
     return fulfilled
 
+
+#TODO delete this, OBE
 # Add provided contracts to our map
 def add_contracts(namespace, k8stype, name):
     provs = get_provides(namespace, k8stype, name)
@@ -222,6 +221,7 @@ def add_contracts(namespace, k8stype, name):
             contracts[env].append(k)
             add_provider(namespace, k8stype, name, k)
 
+# TODO delete this, OBE
 # Add contract provider to our map
 def add_provider(namespace, k8stype, name, contract):
     key = "%s/%s" % (k8stype, name)

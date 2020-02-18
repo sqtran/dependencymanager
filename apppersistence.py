@@ -126,14 +126,35 @@ class Storage:
         cursor = conn.cursor()
         cursor.execute("select * from workload_controller")
         records = cursor.fetchall()
+        conn.close()
         return records
 
+    # Returns a map of contracts
+    def select_contracts(self):
+        conn = sqlite3.connect(self.app_persistence_db)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("select controller_project, contracts_provided from workload_controller where deployment_completed = 1")
+        records = cursor.fetchall()
+        conn.close()
 
+        mapped_results = {}
+        for rows in records:
+            sanitized = mapped_results.get(rows["controller_project"], [])
+            for r in rows["contracts_provided"].split(","):
+                if r.strip() not in sanitized:
+                    sanitized.append(r.strip())
+            mapped_results[rows["controller_project"]] = sanitized
+
+        return mapped_results
+
+    ## returns a list of contract names
     def select_contracts_by_env(self, env):
         conn = sqlite3.connect(self.app_persistence_db)
         cursor = conn.cursor()
         cursor.execute("select contracts_provided from workload_controller where controller_project like ? and deployment_completed = 1", ("%-"+env,))
         records = cursor.fetchall()
+        conn.close()
 
         sanitized = []
         for rows in records:
