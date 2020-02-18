@@ -132,10 +132,12 @@ def register_service(namespace, manifest):
     controller = db.select_controller(namespace,  type_name[0], type_name[1])
 
     if controller is not None and controller["deployment_completed"]:
-        return "This controller has already been registered", 200
+        return "This controller is already registered", 200
 
     deps = get_requires(namespace,  type_name[0], type_name[1])
+    print(deps)
     contracts = db.select_contracts_by_env(get_env(namespace))
+    print(contracts)
     complete = set(deps).issubset(set(contracts))
 
 
