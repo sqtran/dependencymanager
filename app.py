@@ -135,9 +135,7 @@ def register_service(namespace, manifest):
         return "This controller is already registered", 200
 
     deps = get_requires(namespace,  type_name[0], type_name[1])
-    print(deps)
     contracts = db.select_contracts_by_env(get_env(namespace))
-    print(contracts)
     complete = set(deps).issubset(set(contracts))
 
 
@@ -157,6 +155,9 @@ def register_service(namespace, manifest):
     if complete:
         return "All good!", 200
     else:
+        print("%s %s %s" % (namespace, type_name[0], type_name[1]))
+        print("Required Dependencies %s" %(deps))
+        print("Provided Dependencies %s" %(deps))
         return "Dependencies are missing", 418
 
 # TODO delete this, this isn't required
