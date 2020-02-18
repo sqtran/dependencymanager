@@ -139,18 +139,23 @@ def register_service(namespace, manifest):
     complete = set(deps).issubset(set(contracts))
 
 
-    ## TODO Grab all the pieces for the workload controller
-    controller = apppersistence.Workload_Controller()
-    controller.type = type_name[0]
-    controller.controller_name = type_name[1]
-    controller.controller_project = namespace
+    if controller is None:
+        controller = apppersistence.Workload_Controller()
+        controller.type = type_name[0]
+        controller.controller_name = type_name[1]
+        controller.controller_project = namespace
+
     controller.microservice_name = "ms name"                              # pull from annotation
     controller.microservice_api_version = "ms api version"                # pull from annotation
     controller.microservice_artifact_version = "ms artifact version"      # pull from annotation
     controller.contracts_provided = ",".join(get_provides(namespace, type_name[0], type_name[1]))
     controller.contracts_required = ",".join(deps)
     controller.deployment_completed = complete
-    db.create_controller(controller)
+
+    if controller is None:
+        db.create_controller(controller)
+    else:
+        db.update_controller(controller)
 
     if complete:
         return "All good!", 200
