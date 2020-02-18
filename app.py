@@ -140,7 +140,7 @@ def register_service(namespace, manifest):
 
 
     ## TODO Grab all the pieces for the workload controller
-    controller = Workload_Controller()
+    controller = apppersistence.Workload_Controller()
     controller.type = type_name[0]
     controller.controller_name = type_name[1]
     controller.controller_project = namespace
