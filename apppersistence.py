@@ -16,17 +16,17 @@ class Storage:
     def printhello(self):
         print("hello from Storage class' printhello()")
 
-        mock = Workload_Controller()
-        mock.type = "type"
-        mock.controller_name = "controller name"
-        mock.controller_project = "controller project"
-        mock.microservice_name = "ms name"
-        mock.microservice_api_version = "ms api version"
-        mock.microservice_artifact_version = "ms artifact version"
-        mock.contracts_provided = "consumerA-producerZ-1.0"
-        mock.contracts_required = ""
-        mock.deployment_completed = False
-        self.create_controller(mock)
+        ctr = Workload_Controller()
+        ctr.type = "type"
+        ctr.controller_name = "controller name"
+        ctr.controller_project = "controller project"
+        ctr.microservice_name = "ms name"
+        ctr.microservice_api_version = "ms api version"
+        ctr.microservice_artifact_version = "ms artifact version"
+        ctr.contracts_provided = "consumerA-producerZ-1.0"
+        ctr.contracts_required = ""
+        ctr.deployment_completed = False
+        self.create_controller(ctr)
         return "hello"
 
 
@@ -87,11 +87,26 @@ class Storage:
 
     def select_controller_by_key(self, namespace, type, name):
         conn = sqlite3.connect(self.app_persistence_db)
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute("select * from workload_controller where controller_project = ? and type = ? and controller_name = ?", (namespace, type, name))
-        records = cursor.fetchone()
+        record = cursor.fetchone()
         conn.close()
-        return records
+        return self.convert_to_controller(record)
+
+    def convert_to_controller(self, obj):
+        ctr = Workload_Controller()
+        ctr.id = obj.id
+        ctr.type = obj.type
+        ctr.controller_name = obj.controller_name
+        ctr.controller_project = obj.controller_project
+        ctr.microservice_name = obj.microservice_name
+        ctr.microservice_api_version = obj.microservice_api_version
+        ctr.microservice_artifact_version = obj.microservice_artifact_version
+        ctr.contracts_provided = obj.contracts_provided
+        ctr.contracts_required = obj.contracts_required
+        ctr.deployment_completed = obj.deployment_completed
+        return ctr
 
     def select_controller_by_id(self, id):
         conn = sqlite3.connect(self.app_persistence_db)

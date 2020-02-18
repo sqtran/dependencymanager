@@ -121,10 +121,10 @@ def register_service(namespace, manifest):
     except:
         pass
 
-    # Check if this controller is already exists in our records
+    # Check if this controller already exists in our records
     controller = db.select_controller_by_key(namespace, type_name[0], type_name[1])
 
-    if controller is not None and controller["deployment_completed"]:
+    if controller is not None and controller["deployment_completed"] == 1:
         print("A controller for %s %s %s already exists and is complete" % (namespace, type_name[0], type_name[1]))
         return "This controller is already registered", 200
 
