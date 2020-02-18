@@ -130,6 +130,12 @@ def register_service(namespace, manifest):
 
     deps = get_requires(namespace,  type_name[0], type_name[1])
     contracts = db.select_contracts_by_env(get_env(namespace))
+
+    print("Dependencies")
+    print(deps)
+    print("Contracts")
+    print(contracts)
+
     complete = set(deps).issubset(set(contracts))
 
     if controller is None:

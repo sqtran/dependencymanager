@@ -135,11 +135,17 @@ class Storage:
         cursor.execute("select contracts_provided from workload_controller where controller_project like '%-?' and deployment_completed = 1")
         records = cursor.fetchall()
 
+        print(records)
+
         sanitized = []
         for rows in records:
             for r in rows[0].split(","):
                 if r.strip() not in sanitized:
                     sanitized.append(r.strip())
+
+
+        print("sanitized")
+        print(sanitized)
 
         return sanitized
 
