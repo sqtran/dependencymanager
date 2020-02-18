@@ -134,11 +134,8 @@ def register_service(namespace, manifest):
     contracts = db.select_contracts_by_env(get_env(namespace))
     complete = set(deps).issubset(set(contracts))
 
-    print("This controller requires the following contracts")
-    print(deps)
-
     if controller is None:
-        print("Creating a new controller for %s %s %s" % (namespace, type_name[0], type_name[1]))
+        print("Need to create a new controller for %s %s %s" % (namespace, type_name[0], type_name[1]))
         controller = apppersistence.Workload_Controller()
         controller.type = type_name[0]
         controller.controller_name = type_name[1]
@@ -152,12 +149,12 @@ def register_service(namespace, manifest):
     controller.deployment_completed = complete
 
 
-    if controller is None:
+    # If there isn't an ID, then this is new
+    if controller.id is None:
         print("Creating the new controller now")
         db.create_controller(controller)
     else:
-        print("Updating required contracts to %s" % (controller.contracts_required))
-        print("Updating provided contracts to %s" % (controller.contracts_provided))
+        print("Updating the existing controller now")
         db.update_controller(controller)
 
     if complete:
