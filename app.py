@@ -251,7 +251,7 @@ def get_requires(namespace, k8stype, name):
 
 
 def sanitize_list(my_str_list):
-    if my_str_list is None or my_str_list == "<no value>":
+    if my_str_list is None or my_str_list == "":
         return []
     else:
         sanitized = []
