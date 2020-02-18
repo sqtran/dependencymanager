@@ -92,20 +92,24 @@ class Storage:
         cursor.execute("select * from workload_controller where controller_project = ? and type = ? and controller_name = ?", (namespace, type, name))
         record = cursor.fetchone()
         conn.close()
-        return self.convert_to_controller(record)
+
+        if record is not None:
+            return self.convert_to_controller(record)
+        else:
+            return record
 
     def convert_to_controller(self, obj):
         ctr = Workload_Controller()
-        ctr.id = obj.id
-        ctr.type = obj.type
-        ctr.controller_name = obj.controller_name
-        ctr.controller_project = obj.controller_project
-        ctr.microservice_name = obj.microservice_name
-        ctr.microservice_api_version = obj.microservice_api_version
-        ctr.microservice_artifact_version = obj.microservice_artifact_version
-        ctr.contracts_provided = obj.contracts_provided
-        ctr.contracts_required = obj.contracts_required
-        ctr.deployment_completed = obj.deployment_completed
+        ctr.id = obj["id"]
+        ctr.type = obj["type"]
+        ctr.controller_name = obj["controller_name"]
+        ctr.controller_project = obj["controller_project"]
+        ctr.microservice_name = obj["microservice_name"]
+        ctr.microservice_api_version = obj["microservice_api_version"]
+        ctr.microservice_artifact_version = obj["microservice_artifact_version"]
+        ctr.contracts_provided = obj["contracts_provided"]
+        ctr.contracts_required = obj["contracts_required"]
+        ctr.deployment_completed = obj["deployment_completed"]
         return ctr
 
     def select_controller_by_id(self, id):
