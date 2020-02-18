@@ -152,8 +152,10 @@ def register_service(namespace, manifest):
     controller.deployment_completed = complete
     db.create_controller(controller)
 
-    return ret
-
+    if complete:
+        return "All good!", 200
+    else:
+        return "Dependencies are missing", 418
 
 # TODO delete this, this isn't required
 @app.route("/dependencyCheck/<namespace>/<k8stype>/<name>")
