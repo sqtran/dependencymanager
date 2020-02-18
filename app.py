@@ -157,7 +157,7 @@ def register_service(namespace, manifest):
     else:
         print("%s %s %s" % (namespace, type_name[0], type_name[1]))
         print("Required Dependencies %s" %(deps))
-        print("Provided Dependencies %s" %(deps))
+        print("Provided Dependencies %s" %(contracts))
         return "Dependencies are missing", 418
 
 # TODO delete this, this isn't required
