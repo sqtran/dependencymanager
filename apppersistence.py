@@ -60,6 +60,7 @@ class Storage:
                 values(?, ?, ?, ?, ?, ?, ?, ?, ?)"""
             data_tuple = (c.controller_name, c.controller_project, c.microservice_name, c.microservice_artifact_version, c.microservice_api_version, c.microservice_artifact_version, c.contracts_provided, c.contracts_required,c.deployment_completed)
             cursor.execute(sql, data_tuple)
+        print("Created Controller")
 
     def update_controller(self, c):
         conn = sqlite3.connect(self.app_persistence_db)
@@ -70,7 +71,7 @@ class Storage:
                     where id = ?"""
             data_tuple = (c.microservice_name, c.microservice_artifact_version, c.microservice_api_version, c.contracts_provided, c.contracts_required,c.deployment_completed,c.id)
             cursor.execute(sql, data_tuple)
-        return
+        print("Updated Controller")
 
 
     def delete_controller(self, c):
@@ -78,6 +79,8 @@ class Storage:
         with conn:
             cursor = conn.cursor()
             cursor.execute("delete from workload_controller where id=?", (c,))
+        print("Deleted Controller")
+
 
 
     def select_controller_by_id(self, id):
