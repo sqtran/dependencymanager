@@ -11,51 +11,9 @@ db = apppersistence.Storage()
 def main_page():
     return render_template('main.html')
 
-
-# Providers are stored as [<string>][[<string>][List<string>]] as namespace to k8s_objects to contracts
-providers = {}
-missing_dependencies = {}
-
-
-## Testing only - delete when done
-@app.route("/testp")
-def testp():
-    #obj = apppersistence.Storage()
-    return db.printhello()
-
-## Testing only - delete when done
-@app.route("/testfa")
-def testfa():
-    return json.dumps(db.select_controllers())
-
-## Testing only - delete when done
-@app.route("/testf/<id>")
-def testf(id):
-    return json.dumps(db.select_controller_by_id(id))
-
-## Testing only - delete when done
-@app.route("/testd/<id>")
-def testd(id):
-    db.delete_controller_by_id(id)
-    return "deleted "
-
-@app.route("/testu/<id>")
-def testu(id):
-    controller = apppersistence.Workload_Controller()
-    controller.microservice_name = "updated"                      # pull from annotation
-    controller.microservice_api_version = "updated"               # pull from annotation
-    controller.microservice_artifact_version = "updated"          # pull from annotation
-    controller.contracts_provided = "provided"
-    controller.contracts_required = "required"
-    controller.deployment_completed = True
-    controller.id = id
-    db.update_controller(controller)
-    return "done"
-
 # Contracts are returned as a Map [<string>][List<contracts>] as environment (env) to contracts
 @app.route("/contracts")
 def list_contracts_by_env():
-
     results = {}
     mapped_contracts = db.select_contracts()
     # mapped_contracts is a map of [namespace][contracts]
@@ -69,28 +27,21 @@ def list_contracts_by_env():
 
 @app.route("/providers")
 def list_providers():
-    return json.dumps(providers)
+    results = {}
+    for c in db.select_controllers():
+        if c["deployment_completed"] == 1:
+            results[c["controller_project"]] = c["contracts_provided"]
+    return json.dumps(results)
 
 
-@app.route("/flush", methods = ['POST'])
-def flush():
-    contracts = {}
-    providers = {}
-    missing_dependencies = {}
-    return "flushed"
+@app.route("/unsatisfied")
+def list_unsatisfied_services():
+    results = {}
+    for c in db.select_controllers():
+        if c["deployment_completed"] == 0:
+            results[c["controller_project"]] = c["contracts_provided"]
+    return json.dumps(results)
 
-# TODO add a mechanism to loop through and refresh the provides/requires for all known components
-@app.route("/refresh")
-def refresh():
-    return "refreshened"
-
-@app.route("/envs")
-def list_envs():
-    envs = ""
-    for key in contracts:
-        print(key)
-        envs = envs + key + "\n"
-    return envs
 
 @app.route("/register/<namespace>/<manifest>")
 def register_service(namespace, manifest):
@@ -143,11 +94,6 @@ def register_service(namespace, manifest):
         print("Required Dependencies %s" %(deps))
         print("Available Contracts %s" %(contracts))
         return "Dependencies are missing", 418
-
-
-@app.route("/missing")
-def get_missing_dependencies():
-    return json.dumps(missing_dependencies)
 
 
 # if namespace does not have a hypen in it, it just defaults to the name of the namespace

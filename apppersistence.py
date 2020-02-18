@@ -123,6 +123,7 @@ class Storage:
     # TODO add some try/catch statements for safety
     def select_controllers(self):
         conn = sqlite3.connect(self.app_persistence_db)
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute("select * from workload_controller")
         records = cursor.fetchall()
