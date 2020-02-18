@@ -57,7 +57,7 @@ class Storage:
             sql = """insert into workload_controller
                 (type, controller_name, controller_project, microservice_name, microservice_artifact_version, microservice_api_version, contracts_provided, contracts_required, deployment_completed)
                 values(?, ?, ?, ?, ?, ?, ?, ?, ?)"""
-            data_tuple = (c.controller_name, c.controller_project, c.microservice_name, c.microservice_artifact_version, c.microservice_api_version, c.microservice_artifact_version, c.contracts_provided, c.contracts_required,c.deployment_completed)
+            data_tuple = (c.type, c.controller_name, c.controller_project, c.microservice_name, c.microservice_artifact_version, c.microservice_api_version, c.contracts_provided, c.contracts_required,c.deployment_completed)
             cursor.execute(sql, data_tuple)
         conn.close()
         print("Created Controller")
