@@ -18,27 +18,40 @@ providers = {}
 missing_dependencies = {}
 
 
+
+## Testing only - delete when done
 @app.route("/testp")
 def testp():
     #obj = apppersistence.Storage()
     return db.printhello()
 
+## Testing only - delete when done
 @app.route("/testr")
 def testr():
     return json.dumps(db.select_controllers())
 
-
+## Testing only - delete when done
 @app.route("/testd")
 def testd():
-
     controllers = db.select_controllers()
-    print(controllers)
-    controller = db.select_controller(controllers[0][0])    # index 0 is the ID
+    controller = db.select_controller_by_id(controllers[0][0])    # index 0 is the ID
     db.delete_controller(controller[0])
-
     return "deleted "
 
+@app.route("/testu/<id>")
+def testu(id):
+    controller = apppersistence.Workload_Controller()
+    controller.microservice_name = "updated"                      # pull from annotation
+    controller.microservice_api_version = "updated"               # pull from annotation
+    controller.microservice_artifact_version = "updated"          # pull from annotation
+    controller.contracts_provided = "provided"
+    controller.contracts_required = "required"
+    controller.deployment_completed = True
+    controller.id = id
+    db.update_controller(controller)
+    return "done"
 
+## Testing only - delete when done
 @app.route("/test/<namespace>/<k8s>/<name>/<contract>", methods = ['POST', 'DELETE'])
 def test_method_only(namespace, k8s, name, contract):
     env = get_env(namespace)
@@ -73,6 +86,7 @@ def list_contracts():
 @app.route("/providers")
 def list_providers():
     return json.dumps(providers)
+
 
 @app.route("/flush", methods = ['POST'])
 def flush():
@@ -111,26 +125,37 @@ def register_service(namespace, manifest):
 
     type_name = ref.split("/")
 
-    ret = dependency_check(namespace, type_name[0], type_name[1])
+    # old way
+    #ret = dependency_check(namespace, type_name[0], type_name[1])
+
+    # Checking if this controller is already registered
+    controller = db.select_controller(namespace,  type_name[0], type_name[1])
+
+    if controller is not None and controller["deployment_completed"]:
+        return "This controller has already been registered", 200
+
+    deps = get_requires(namespace,  type_name[0], type_name[1])
+    contracts = db.select_contracts_by_env(get_env(namespace))
+    complete = set(deps).issubset(set(contracts))
+
 
     ## TODO Grab all the pieces for the workload controller
-    mock = Workload_Controller()
-    mock.type = type_name[0]
-    mock.controller_name = type_name[1]
-    mock.controller_project = namespace
-    mock.microservice_name = "ms name"
-    mock.microservice_api_version = "ms api version"
-    mock.microservice_artifact_version = "ms artifact version"
-    mock.contracts_provided = get_provides(namespace, type_name[0], type_name[1])
-    mock.contracts_required = get_requires(namespace, type_name[0], type_name[1])
-    mock.deployment_completed = False
-    self.create_controller(mock)
+    controller = Workload_Controller()
+    controller.type = type_name[0]
+    controller.controller_name = type_name[1]
+    controller.controller_project = namespace
+    controller.microservice_name = "ms name"                              # pull from annotation
+    controller.microservice_api_version = "ms api version"                # pull from annotation
+    controller.microservice_artifact_version = "ms artifact version"      # pull from annotation
+    controller.contracts_provided = ",".join(get_provides(namespace, type_name[0], type_name[1]))
+    controller.contracts_required = ",".join(deps)
+    controller.deployment_completed = complete
+    db.create_controller(controller)
 
     return ret
 
 
-# TODO need k8s type validation
-# TODO delete this, this isn't required anymore
+# TODO delete this, this isn't required
 @app.route("/dependencyCheck/<namespace>/<k8stype>/<name>")
 def dependency_check(namespace, k8stype, name):
 

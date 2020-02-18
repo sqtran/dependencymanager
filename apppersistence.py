@@ -15,7 +15,6 @@ class Storage:
     def __init__(self):
         self.init_tables()
 
-
     def printhello(self):
         print("hello from Storage class' printhello()")
 
@@ -35,41 +34,53 @@ class Storage:
 
     def init_tables(self):
         conn = sqlite3.connect(self.app_persistence_db)
-        cursor = conn.cursor()
-        cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='workload_controller'")
+        table_exists = False
 
-        if cursor.fetchone()[0]==1:
-        	print('Table exists.')
-        else:
-            print('Table does not exist.')
-            cursor.execute('''CREATE TABLE workload_controller (id INTEGER PRIMARY KEY AUTOINCREMENT, type text, controller_name text, controller_project text, microservice_name text, microservice_artifact_version text, microservice_api_version text, contracts_provided text, contracts_required text, deployment_completed bool)''')
+        with conn:
+            cursor = conn.cursor()
+            try:
+                cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='workload_controller'")
+                if cursor.fetchone()[0]==1:
+                    print('Table exists.')
+                    table_exists = True
+            except:
+                print('Table does not exist yet')
 
-        conn.commit()
-        conn.close()
+            if not table_exists:
+                cursor.execute('''CREATE TABLE workload_controller (id INTEGER PRIMARY KEY AUTOINCREMENT, type text, controller_name text, controller_project text, microservice_name text, microservice_artifact_version text, microservice_api_version text, contracts_provided text, contracts_required text, deployment_completed bool)''')
+
         return
 
     def create_controller(self, c):
-
         conn = sqlite3.connect(self.app_persistence_db)
-        cursor = conn.cursor()
-        sql = """insert into workload_controller
-            (type, controller_name, controller_project, microservice_name, microservice_artifact_version, microservice_api_version, contracts_provided, contracts_required, deployment_completed)
-            values(?, ?, ?, ?, ?, ?, ?, ?, ?)"""
-        data_tuple = (c.controller_name, c.controller_project, c.microservice_name, c.microservice_artifact_version, c.microservice_api_version, c.microservice_artifact_version, c.contracts_provided, c.contracts_required,c.deployment_completed)
-        cursor.execute(sql, data_tuple)
-        conn.commit()
-        conn.close()
+        with conn:
+            cursor = conn.cursor()
+            sql = """insert into workload_controller
+                (type, controller_name, controller_project, microservice_name, microservice_artifact_version, microservice_api_version, contracts_provided, contracts_required, deployment_completed)
+                values(?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+            data_tuple = (c.controller_name, c.controller_project, c.microservice_name, c.microservice_artifact_version, c.microservice_api_version, c.microservice_artifact_version, c.contracts_provided, c.contracts_required,c.deployment_completed)
+            cursor.execute(sql, data_tuple)
+
+    def update_controller(self, c):
+        conn = sqlite3.connect(self.app_persistence_db)
+        with conn:
+            cursor = conn.cursor()
+            sql = """update workload_controller
+                    set microservice_name = ?, microservice_artifact_version = ?, microservice_api_version = ?, contracts_provided =?, contracts_required = ?, deployment_completed =?
+                    where id = ?"""
+            data_tuple = (c.microservice_name, c.microservice_artifact_version, c.microservice_api_version, c.contracts_provided, c.contracts_required,c.deployment_completed,c.id)
+            cursor.execute(sql, data_tuple)
+        return
 
 
     def delete_controller(self, c):
         conn = sqlite3.connect(self.app_persistence_db)
-        cursor = conn.cursor()
-        cursor.execute("delete from workload_controller where id=?", (c,))
-        conn.commit()
-        conn.close()
+        with conn:
+            cursor = conn.cursor()
+            cursor.execute("delete from workload_controller where id=?", (c,))
 
 
-    def select_controller(self, id):
+    def select_controller_by_id(self, id):
         conn = sqlite3.connect(self.app_persistence_db)
         cursor = conn.cursor()
         cursor.execute("select * from workload_controller where id=?", (id,))
@@ -77,6 +88,13 @@ class Storage:
         conn.close()
         return records
 
+    def select_controller(self, namespace, type, name):
+        conn = sqlite3.connect(self.app_persistence_db)
+        cursor = conn.cursor()
+        cursor.execute("select * from workload_controller where controller_project = ? and type = ? and controller_name = ?", (namespace, type, name))
+        records = cursor.fetchone()
+        conn.close()
+        return records
 
     # TODO add some try/catch statements for safety
     def select_controllers(self):
@@ -85,6 +103,22 @@ class Storage:
         cursor.execute("select * from workload_controller")
         records = cursor.fetchall()
         return records
+
+
+    def select_contracts_by_env(self, env):
+        conn = sqlite3.connect(self.app_persistence_db)
+        cursor = conn.cursor()
+        cursor.execute("select contracts_provided from workload_controller where namespace like %-? and deployment_completed is true")
+        records = cursor.fetchall()
+
+        sanitized = []
+        for rows in records:
+            for r in rows[0].split(","):
+                if r.strip() not in sanitized:
+                    sanitized.append(r.strip())
+
+        return sanitized
+
 
 class Workload_Controller:
     '''This encapsulates a Workload Controller object'''
