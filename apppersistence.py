@@ -108,7 +108,7 @@ class Storage:
     def select_contracts_by_env(self, env):
         conn = sqlite3.connect(self.app_persistence_db)
         cursor = conn.cursor()
-        cursor.execute("select contracts_provided from workload_controller where controller_project like '%-?' and deployment_completed is true")
+        cursor.execute("select contracts_provided from workload_controller where controller_project like '%-?' and deployment_completed = 1")
         records = cursor.fetchall()
 
         sanitized = []
