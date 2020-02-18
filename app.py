@@ -113,7 +113,7 @@ def list_envs():
 @app.route("/register/<namespace>/<manifest>")
 def register_service(namespace, manifest):
 
-    pod_owner = oc_get_owner_reference(namespace, manifest)
+    pod_owner = oc_get_owner_reference(namespace, "pod/" + manifest)
     type_name = pod_owner.split("/")
     try:
         owners_owner = oc_get_owner_reference(namespace, pod_owner)
