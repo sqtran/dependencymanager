@@ -1,21 +1,43 @@
 from flask import Flask, request, render_template
 import subprocess
 import json
+import apppersistence
 
 app = Flask(__name__)
+db = apppersistence.Storage()
+
 
 @app.route('/')
 def main_page():
     return render_template('main.html')
 
-
 # Contracts are stored as [<string>][List<contracts>] as environment (env) to contracts
 contracts = {}
-
 # Providers are stored as [<string>][[<string>][List<string>]] as namespace to k8s_objects to contracts
 providers = {}
-
 missing_dependencies = {}
+
+
+@app.route("/testp")
+def testp():
+    #obj = apppersistence.Storage()
+    return db.printhello()
+
+@app.route("/testr")
+def testr():
+    return json.dumps(db.select_controllers())
+
+
+@app.route("/testd")
+def testd():
+
+    controllers = db.select_controllers()
+    print(controllers)
+    controller = db.select_controller(controllers[0][0])    # index 0 is the ID
+    db.delete_controller(controller[0])
+
+    return "deleted "
+
 
 @app.route("/test/<namespace>/<k8s>/<name>/<contract>", methods = ['POST', 'DELETE'])
 def test_method_only(namespace, k8s, name, contract):
@@ -42,6 +64,8 @@ def test_method_only(namespace, k8s, name, contract):
     contracts[env] = entries
     return "done\n"
 
+
+# Contracts are stored as [<string>][List<contracts>] as environment (env) to contracts
 @app.route("/contracts")
 def list_contracts():
     return json.dumps(contracts)
@@ -80,21 +104,33 @@ def register_service(namespace, manifest):
     except:
         owners_owner = None
 
-
     ref = owners_owner
     if owners_owner is None:
         print("no owner, this is either a ReplicaSet or ReplicationController so there's nothing left to do")
         ref = pod_owner
 
-    return dependency_check(namespace, ref.split("/")[0], ref.split("/")[1])
+    type_name = ref.split("/")
 
-# TODO
+    ret = dependency_check(namespace, type_name[0], type_name[1])
 
-# 1)  get ownerReference by pod name and Namespace to get ReplicationController or ReplicaSets
-# 2)  lookup replicacontrollr or replicasets to determine if there is a Deployment, DeploymentConfig, or StatefulSet owner to follow, otherwise it's just RS or RC
+    ## TODO Grab all the pieces for the workload controller
+    mock = Workload_Controller()
+    mock.type = type_name[0]
+    mock.controller_name = type_name[1]
+    mock.controller_project = namespace
+    mock.microservice_name = "ms name"
+    mock.microservice_api_version = "ms api version"
+    mock.microservice_artifact_version = "ms artifact version"
+    mock.contracts_provided = get_provides(namespace, type_name[0], type_name[1])
+    mock.contracts_required = get_requires(namespace, type_name[0], type_name[1])
+    mock.deployment_completed = False
+    self.create_controller(mock)
+
+    return ret
 
 
 # TODO need k8s type validation
+# TODO delete this, this isn't required anymore
 @app.route("/dependencyCheck/<namespace>/<k8stype>/<name>")
 def dependency_check(namespace, k8stype, name):
 
@@ -166,7 +202,7 @@ def get_env(namespace):
 
 def get_oc_output(cmd):
     return subprocess.check_output(cmd, shell=True).decode("utf-8")
-9
+
 def oc_get_owner_reference(namespace, object):
     kind = get_oc_output("oc get %s -n %s -o go-template='{{ (index .metadata.ownerReferences 0).kind }}'" % (object, namespace))
     name = get_oc_output("oc get %s -n %s -o go-template='{{ (index .metadata.ownerReferences 0).name }}'" % (object, namespace))
