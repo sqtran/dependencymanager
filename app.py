@@ -113,36 +113,32 @@ def list_envs():
 @app.route("/register/<namespace>/<manifest>")
 def register_service(namespace, manifest):
 
-    #TODO super lazy to figure out the root cause, need to clean this up
+    pod_owner = oc_get_owner_reference(namespace, manifest)
+    type_name = pod_owner.split("/")
     try:
-        pod_owner = oc_get_owner_reference(namename[0], type_name[1])
-
-    # Checking if this controller is already respace, "pod/" + manifest)
         owners_owner = oc_get_owner_reference(namespace, pod_owner)
+        type_name = owners_owner.split("/")
     except:
-        owners_owner = None
+        pass
 
-    ref = owners_owner
-    if owners_owner is None:
-        print("no owner, this is either a ReplicaSet or ReplicationController so there's nothing left to do")
-        ref = pod_owner
-
-    type_name = ref.split("/")
-
-    # old way
-    #ret = dependency_check(namespace, type_name[0], type_name[1])
-
-    # Checking if this controller is already registered
+    # Check if this controller is already exists in our records
     controller = db.select_controller_by_key(namespace,  type_name[0], type_name[1])
 
     if controller is not None and controller["deployment_completed"]:
+        print("A controller for %s %s %s already exists and is complete" % (namespace, type_name[0], type_name[1]))
         return "This controller is already registered", 200
+    else:
+        print("No controller found for %s %s %s, this is a new service to register" % (namespace, type_name[0], type_name[1]))
 
     deps = get_requires(namespace,  type_name[0], type_name[1])
     contracts = db.select_contracts_by_env(get_env(namespace))
     complete = set(deps).issubset(set(contracts))
 
+    print("This controller requires the following contracts")
+    print(deps)
+
     if controller is None:
+        print("Creating a new controller for %s %s %s" % (namespace, type_name[0], type_name[1]))
         controller = apppersistence.Workload_Controller()
         controller.type = type_name[0]
         controller.controller_name = type_name[1]
@@ -157,16 +153,16 @@ def register_service(namespace, manifest):
 
 
     if controller is None:
+        print("Creating the new controller now")
         db.create_controller(controller)
     else:
-        print("update provided contracts to %s" % (controller.contracts_provided))
-        print("update required contracts to %s" % (controller.contracts_required))
+        print("Updating required contracts to %s" % (controller.contracts_required))
+        print("Updating provided contracts to %s" % (controller.contracts_provided))
         db.update_controller(controller)
 
     if complete:
-        return "All good!", 200
+        return "All required dependencies have been satsified", 200
     else:
-        print("%s %s %s" % (namespace, type_name[0], type_name[1]))
         print("Required Dependencies %s" %(deps))
         print("Provided Dependencies %s" %(contracts))
         return "Dependencies are missing", 418
