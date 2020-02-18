@@ -152,9 +152,12 @@ def register_service(namespace, manifest):
     controller.contracts_required = ",".join(deps)
     controller.deployment_completed = complete
 
+
     if controller is None:
         db.create_controller(controller)
     else:
+        print("update provided contracts to %s" % (controller.contracts_provided))
+        print("update required contracts to %s" % (controller.contracts_required))
         db.update_controller(controller)
 
     if complete:
