@@ -130,6 +130,15 @@ class Storage:
         conn.close()
         return records
 
+    def select_incomplete_controllers(self):
+        conn = sqlite3.connect(self.app_persistence_db)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("select * from workload_controller where deployment_completed = 0")
+        records = cursor.fetchall()
+        conn.close()
+        return records
+
     # Returns a map of contracts
     def select_contracts(self):
         conn = sqlite3.connect(self.app_persistence_db)

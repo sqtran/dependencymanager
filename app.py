@@ -36,11 +36,21 @@ def list_providers():
 
 @app.route("/unsatisfied")
 def list_unsatisfied_services():
-    results = {}
-    for c in db.select_controllers():
-        if c["deployment_completed"] == 0:
-            results[c["controller_project"]] = c["contracts_provided"]
-    return json.dumps(results)
+
+    incomplete = db.select_incomplete_controllers()
+
+    mapped = {}
+
+    for i in incomplete:
+        namespace = i["controller_project"]
+        k8s_name_type = "%s/%s" % (i["type"], i["controller_name"])
+        reqs = i["contracts_required"]
+
+        tmp = mapped.get(namespace, {})
+        tmp[k8s_name_type] = reqs
+        mapped[namespace] = tmp
+
+    return json.dumps(mapped)
 
 
 @app.route("/register/<namespace>/<manifest>")
