@@ -3,7 +3,7 @@ import sqlite3
 class Storage:
     '''This is to abstract persistence logic from the main application'''
 
-    app_persistence_db = "depman.db"
+    app_persistence_db = "../depmandb/depman.db"
 
     def __init__(self):
         self.init_tables()
