@@ -49,11 +49,13 @@ oc adm policy add-cluster-role-to-user view -z depman -n depman
 Using the dependency manager only requires modifying the Kubernetes manifest that deploys your application.  It can be a `Deployment`, `DeploymentConfig`, `StatefulSet`, `ReplicationController`, `ReplicaSet`, or any other manifest object.  Usage requires only two pieces of configuration.
 
 #### 1. Annotations
-Each deployment must be annotated with the following.  These fields are comma-separated, and should describe the contracts required and provided by the application.
+Each deployment must be annotated with the following.  These fields are comma-separated, and should describe the contracts required and provided by the application.  This belongs in the `.meta.annotations` section of the manifest file.  Note that an empty string in the "requires" annotation means this service does not have any dependencies.
+
 ```yaml
 gr.depman/provides: "consumerA-producer-1.0, consumerB-producer-0.1, consumerB-producer-0.2"
 gr.depman/requires: ""
 ```
+Annotations were chosen over labels because they have more flexibility in terms of character sets.
 
 #### 2. InitContainer
 The `initContainer` makes a call to the dependency manager to register its pod name, and its namespace.  The dependency uses these two pieces of information to inspect the Kubernetes objects to determine its controller.
