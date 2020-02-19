@@ -27,21 +27,22 @@ def list_contracts_by_env():
 
 @app.route("/providers")
 def list_providers():
-    results = {}
-    for c in db.select_controllers():
-        if c["deployment_completed"] == 1:
-            results[c["controller_project"]] = c["contracts_provided"]
-    return json.dumps(results)
+    mapped = {}
+    for i in db.select_controllers():
+        if i["deployment_completed"] == 1:
+            namespace = i["controller_project"]
+            k8s_name_type = "%s/%s" % (i["type"], i["controller_name"])
+            provs = i["contracts_provided"]
 
+            tmp = mapped.get(namespace, {})
+            tmp[k8s_name_type] = provs
+            mapped[namespace] = tmp
+    return json.dumps(mapped)
 
 @app.route("/unsatisfied")
 def list_unsatisfied_services():
-
-    incomplete = db.select_incomplete_controllers()
-
     mapped = {}
-
-    for i in incomplete:
+    for i in db.select_incomplete_controllers():
         namespace = i["controller_project"]
         k8s_name_type = "%s/%s" % (i["type"], i["controller_name"])
         reqs = i["contracts_required"]
@@ -49,9 +50,7 @@ def list_unsatisfied_services():
         tmp = mapped.get(namespace, {})
         tmp[k8s_name_type] = reqs
         mapped[namespace] = tmp
-
     return json.dumps(mapped)
-
 
 @app.route("/register/<namespace>/<manifest>")
 def register_service(namespace, manifest):
