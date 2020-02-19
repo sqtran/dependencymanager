@@ -1,15 +1,10 @@
 import sqlite3
-import json
 
 class Storage:
     '''This is to abstract persistence logic from the main application'''
 
-    app_persistence_db = "test.db"
+    app_persistence_db = "depman.db"
 
-    # cursor.execute('CREATE TABLE ocp_workload_controller (id INTEGER PRIMARY KEY, env text)')
-    # cursor.execute('CREATE TABLE ocp_project (id INTEGER PRIMARY KEY, env text)')
-    # cursor.execute('CREATE TABLE contracts (id INTEGER PRIMARY KEY, name text, workload_controller)')
-    # cursor.close()
     def __init__(self):
         self.init_tables()
 
@@ -157,10 +152,8 @@ class Storage:
 
         return sanitized
 
-
 class Workload_Controller:
     '''This encapsulates a Workload Controller object'''
-
     def __init__(self):
         self.id = None
         self.type = None
@@ -172,10 +165,3 @@ class Workload_Controller:
         self.contracts_provided = None
         self.contracts_required = None
         self.deployment_completed = None
-
-# is this necessary?
-class Contract:
-    '''This encapsulates an OCP Project object'''
-    def __init__(self):
-        self.id = None
-        self.name = None
