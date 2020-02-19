@@ -42,6 +42,7 @@ The dependency manager runs as a `ServiceAccount` named **depman**, which requir
 oc adm policy add-cluster-role-to-user view -z depman -n depman
 ```
 
+The dependency manager writes its files to a file named `../depmandb/depman.db`.  The directory must exist ahead of time.
 
 
 ### Usage
