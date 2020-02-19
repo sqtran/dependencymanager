@@ -32,10 +32,9 @@ def list_providers():
         if i["deployment_completed"] == 1:
             namespace = i["controller_project"]
             k8s_name_type = "%s/%s" % (i["type"], i["controller_name"])
-            provs = i["contracts_provided"]
 
             tmp = mapped.get(namespace, {})
-            tmp[k8s_name_type] = provs
+            tmp[k8s_name_type] = i["contracts_provided"]
             mapped[namespace] = tmp
     return json.dumps(mapped)
 
@@ -45,10 +44,9 @@ def list_unsatisfied_services():
     for i in db.select_incomplete_controllers():
         namespace = i["controller_project"]
         k8s_name_type = "%s/%s" % (i["type"], i["controller_name"])
-        reqs = i["contracts_required"]
 
         tmp = mapped.get(namespace, {})
-        tmp[k8s_name_type] = reqs
+        tmp[k8s_name_type] = i["contracts_required"]
         mapped[namespace] = tmp
     return json.dumps(mapped)
 
@@ -81,9 +79,9 @@ def register_service(namespace, manifest):
         controller.controller_name = type_name[1]
         controller.controller_project = namespace
 
-    controller.microservice_name = "ms name"                              # pull from annotation
-    controller.microservice_api_version = "ms api version"                # pull from annotation
-    controller.microservice_artifact_version = "ms artifact version"      # pull from annotation
+    controller.microservice_name = "TBD"                  # pull from annotation
+    controller.microservice_api_version = "TBD"           # pull from annotation
+    controller.microservice_artifact_version = "TBD"      # pull from annotation
     controller.contracts_provided = ",".join(get_provides(namespace, type_name[0], type_name[1]))
     controller.contracts_required = ",".join(deps)
     controller.deployment_completed = complete
@@ -103,7 +101,6 @@ def register_service(namespace, manifest):
         print("Required Dependencies %s" %(deps))
         print("Available Contracts %s" %(contracts))
         return "Dependencies are missing", 418
-
 
 # if namespace does not have a hypen in it, it just defaults to the name of the namespace
 def get_env(namespace):

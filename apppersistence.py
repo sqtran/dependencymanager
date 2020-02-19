@@ -13,23 +13,6 @@ class Storage:
     def __init__(self):
         self.init_tables()
 
-    def printhello(self):
-        print("hello from Storage class' printhello()")
-
-        ctr = Workload_Controller()
-        ctr.type = "type"
-        ctr.controller_name = "controller name"
-        ctr.controller_project = "controller project"
-        ctr.microservice_name = "ms name"
-        ctr.microservice_api_version = "ms api version"
-        ctr.microservice_artifact_version = "ms artifact version"
-        ctr.contracts_provided = "consumerA-producerZ-1.0"
-        ctr.contracts_required = ""
-        ctr.deployment_completed = False
-        self.create_controller(ctr)
-        return "hello"
-
-
     def init_tables(self):
         conn = sqlite3.connect(self.app_persistence_db)
         table_exists = False
