@@ -11,6 +11,11 @@ db = apppersistence.Storage()
 def main_page():
     return render_template('main.html')
 
+@app.route("/flush_all", methods = ['POST'])
+def flush_all():
+    db.flush_tables()
+    return "Flushed", 200
+
 # Contracts are returned as a Map [<string>][List<contracts>] as environment (env) to contracts
 @app.route("/contracts")
 def list_contracts_by_env():
@@ -125,7 +130,6 @@ def get_provides(namespace, k8stype, name):
 # returns a list of contracts required
 def get_requires(namespace, k8stype, name):
     return sanitize_list(oc_get_labels_str(namespace, k8stype, name, "gr.depman/requires"))
-
 
 def sanitize_list(my_str_list):
     if my_str_list is None or my_str_list == "":
