@@ -66,7 +66,7 @@ This example uses a simple and lightweight alpine image that includes the `curl`
       initContainers:
         - name: init-depman
           image: byrnedo/alpine-curl
-          command: ["sh, ""-c", "curl -f depman.depman.svc.cluster.local:5000/register/$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)/$HOSTNAME"]
+          command: ["sh", "-c", "curl -f depman.depman.svc.cluster.local:5000/register/$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)/$HOSTNAME"]
 ```
 It is a goal to provide a prebuilt initContainer that has the proper entrypoint so that registration doesn't require the manual entry of the initContainer's `command`.
 
